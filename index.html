@@ -8,13 +8,13 @@
         /* --- 完全保留原始樣式核心 --- */
         :root { --primary: #2c3e50; --accent: #e67e22; --line: #bdc3c7; }
         body { 
-    margin: 0; 
-    font-family: "Microsoft JhengHei", sans-serif; 
-    display: flex; 
-    height: 100vh; 
-    background: #ffffff; /* 把原本的 #f5f6fa 改成純白 */
-    overflow: hidden; 
-}
+            margin: 0; 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            background: #ffffff; /* 把原本的 #f5f6fa 改成純白 */
+            overflow: hidden; 
+        }
         
         .sidebar { width: 320px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
         .header { border-bottom: 3px solid var(--accent); margin-bottom: 12px; padding-bottom: 8px; }
@@ -26,16 +26,16 @@
         .rename-input { width: 100%; padding: 8px; border: 1px solid var(--accent); border-radius: 4px; font-weight: bold; box-sizing: border-box; }
 
         .main-view { 
-    flex: 1; 
-    flex-grow: 1; /* 強制成長填滿剩餘空間 */
-    overflow: auto; 
-    padding: 40px; 
-    background: #ffffff; /* 純白背景 */
-    display: flex; 
-    align-items: flex-start; 
-    position: relative;
-    align-self: stretch; /* 垂直拉滿 */
-}
+            flex: 1; 
+            flex-grow: 1; /* 強制成長填滿剩餘空間 */
+            overflow: auto; 
+            padding: 40px; 
+            background: #ffffff; /* 純白背景 */
+            display: flex; 
+            align-items: flex-start; 
+            position: relative;
+            align-self: stretch; /* 垂直拉滿 */
+        }
         .tree-root { display: flex; flex-direction: column; align-items: flex-start; min-width: max-content; }
         
         .ul-tree { list-style: none; padding-left: 20px; margin: 0; position: relative; display: flex; flex-direction: column; }
@@ -54,15 +54,13 @@
         .tree-root > .li-node::before, .tree-root > .li-node::after { display: none; }
 
         /* --- 手機版 RWD 適配 (上下排版) --- */
-        /* --- 手機版 RWD 適配 (上下排版) --- */
         @media (max-width: 768px) {
-            /* 修正：手機版背景底層漆白 */
             body { 
                 flex-direction: column; 
                 background: #ffffff !important; 
             }
             
-            #editor-view { flex-direction: column-reverse; width: 100%; height: 100vh; display: none; } /* 預設隱藏由 JS 控制顯示 */
+            #editor-view { flex-direction: column-reverse; width: 100%; height: 100vh; display: none; } 
             
             .sidebar { 
                 width: 100%; 
@@ -71,10 +69,9 @@
                 border-top: 2px solid #ddd; 
                 padding: 10px;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                background: #ffffff; /* 側邊欄底色也確保純白 */
+                background: #ffffff;
             }
 
-            /* 修正：將畫布區背景從 #fdfdfd 改為 #ffffff 並拉滿寬度 */
             .main-view { 
                 height: 55vh; 
                 width: 100%; 
@@ -83,7 +80,7 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            .rename-input, textarea { font-size: 16px; } /* 防止手機點擊時畫面放大 */
+            .rename-input, textarea { font-size: 16px; }
             .box { padding: 6px 10px; font-size: 12px; }
         }
 
@@ -96,7 +93,7 @@
 
         @media print { 
             .sidebar { display: none; } 
-            .main-view { padding: 0; overflow: visible; width: 100%; } 
+            .main-view { padding: 0; overflow: visible; width: 100%; height: auto !important; } 
             .box.active { border-color: var(--primary) !important; background: white !important; box-shadow: none !important; color: var(--primary) !important; }
             .box.root-box.active { background-color: #2c3e50 !important; color: white !important; }
         }
@@ -143,7 +140,7 @@
         <textarea id="editor" placeholder="每一行會生成一個右側分支..."></textarea>
         
         <div style="display: flex; gap: 5px;">
-            <button class="btn-print" onclick="window.print()" style="flex:1;">PDF/列印</button>
+            <button class="btn-print" onclick="window.print()" style="flex:1;">下載PDF/列印</button>
             <button class="btn-print" style="background:#2c3e50; flex:1;" onclick="downloadData()">備份</button>
         </div>
         <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer; font-size:11px; margin-top:15px; text-decoration:underline;">登出系統</button>
@@ -152,7 +149,7 @@
 </div>
 
 <script>
-    // --- 帳號管理邏輯 ---
+    // --- 腳本邏輯完全保留，無變動 ---
     let users = JSON.parse(localStorage.getItem('sys_users')) || { "admin": "1234" };
     let isRegisterMode = false;
     let loggedUser = sessionStorage.getItem('logged_user') || "";
@@ -188,7 +185,6 @@
 
     function logout() { sessionStorage.clear(); location.reload(); }
 
-    // --- 資料管理邏輯 ---
     const blankTemplate = () => ({ "root": { name: "組裝流程", children: [] } });
     let allProjects = JSON.parse(localStorage.getItem('files_' + loggedUser)) || { "預設專案": null };
     let currentProjectName = "", treeData = {}, activeId = "root";
@@ -248,8 +244,6 @@
         editor.value = treeData[id].children.map(cid => treeData[cid].name).join('\n');
         canvas.innerHTML = "";
         canvas.appendChild(buildTree("root"));
-        
-        // 手機版自動對焦至選中節點
         if (window.innerWidth <= 768) {
             setTimeout(() => {
                 const activeBox = document.querySelector('.box.active');

@@ -2,41 +2,24 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>心智圖生成系統 - 全平台相容版</title>
+    <title>心智圖生成系統</title>
     <style>
-        /* --- 完全保留原始樣式核心 --- */
+        /* --- 完全保留原始樣式 --- */
         :root { --primary: #2c3e50; --accent: #e67e22; --line: #bdc3c7; }
-        body { 
-            margin: 0; 
-            font-family: "Microsoft JhengHei", sans-serif; 
-            display: flex; 
-            height: 100vh; 
-            background: #ffffff; /* 把原本的 #f5f6fa 改成純白 */
-            overflow: hidden; 
-        }
+        body { margin: 0; font-family: "Microsoft JhengHei", sans-serif; display: flex; height: 100vh; background: #f5f6fa; overflow: hidden; }
         
-        .sidebar { width: 320px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
+        .sidebar { width: 320px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; }
         .header { border-bottom: 3px solid var(--accent); margin-bottom: 12px; padding-bottom: 8px; }
         #node-label { font-weight: bold; color: var(--accent); font-size: 1em; }
         textarea { flex: 1; padding: 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 6px; resize: none; outline: none; line-height: 1.5; background: #fafafa; }
-        .btn-print { background: var(--accent); color: white; padding: 10px; margin-top: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-print { background: var(--accent); color: white; padding: 10px; margin-top: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
+        /* 新增：改名輸入框樣式 */
         .rename-section { margin-bottom: 15px; }
         .rename-input { width: 100%; padding: 8px; border: 1px solid var(--accent); border-radius: 4px; font-weight: bold; box-sizing: border-box; }
 
-        .main-view { 
-            flex: 1; 
-            flex-grow: 1; /* 強制成長填滿剩餘空間 */
-            overflow: auto; 
-            padding: 40px; 
-            background: #ffffff; /* 純白背景 */
-            display: flex; 
-            align-items: flex-start; 
-            position: relative;
-            align-self: stretch; /* 垂直拉滿 */
-        }
-        .tree-root { display: flex; flex-direction: column; align-items: flex-start; min-width: max-content; }
+        .main-view { flex: 1; overflow: auto; padding: 40px; background: white; display: flex; align-items: flex-start; }
+        .tree-root { display: flex; flex-direction: column; align-items: flex-start; }
         
         .ul-tree { list-style: none; padding-left: 20px; margin: 0; position: relative; display: flex; flex-direction: column; }
         .li-node { position: relative; display: flex; align-items: center; padding: 6px 0; }
@@ -53,50 +36,42 @@
         .li-node:only-child::after { display: none; }
         .tree-root > .li-node::before, .tree-root > .li-node::after { display: none; }
 
-        /* --- 手機版 RWD 適配 (上下排版) --- */
-        @media (max-width: 768px) {
-            body { 
-                flex-direction: column; 
-                background: #ffffff !important; 
-            }
-            
-            #editor-view { flex-direction: column-reverse; width: 100%; height: 100vh; display: none; } 
-            
-            .sidebar { 
-                width: 100%; 
-                height: 45vh; 
-                border-right: none; 
-                border-top: 2px solid #ddd; 
-                padding: 10px;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                background: #ffffff;
-            }
-
-            .main-view { 
-                height: 55vh; 
-                width: 100%; 
-                padding: 20px;
-                background: #ffffff !important; 
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .rename-input, textarea { font-size: 16px; }
-            .box { padding: 6px 10px; font-size: 12px; }
-        }
-
-        /* 大廳與登入樣式保留 */
-        #lobby-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f5f6fa; z-index: 999; display: flex; flex-direction: column; align-items: center; padding-top: 50px; overflow-y: auto; }
-        .lobby-container { width: 90%; max-width: 900px; }
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .project-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; position: relative; text-align: center; }
-        .project-card:hover { border-color: var(--accent); }
-
         @media print { 
-            .sidebar { display: none; } 
-            .main-view { padding: 0; overflow: visible; width: 100%; height: auto !important; } 
-            .box.active { border-color: var(--primary) !important; background: white !important; box-shadow: none !important; color: var(--primary) !important; }
-            .box.root-box.active { background-color: #2c3e50 !important; color: white !important; }
-        }
+    .sidebar { display: none; } 
+    .main-view { padding: 0; overflow: visible; width: 100%; } 
+    body { background: white; } 
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    /* --- 新增：強制列印時不顯示選中狀態的橘色 --- */
+    .box.active { 
+        border-color: var(--primary) !important; /* 恢復成深藍/黑色邊框 */
+        background: white !important;           /* 恢復成白色背景 */
+        box-shadow: none !important;            /* 移除陰影 */
+        color: var(--primary) !important;
+    }
+    
+    /* 如果是根節點被選中，也要維持深藍色底 */
+    .box.root-box.active {
+        background-color: #2c3e50 !important;
+        color: white !important;
+    }
+    /* -------------------------------------- */
+
+    .box.root-box { background-color: #2c3e50 !important; color: white !important; border: none !important; }
+    .box { padding: 2px 6px !important; font-size: 11px !important; border: 1px solid black !important; }
+    .li-node::before, .li-node::after { border-color: black !important; }
+}
+
+        #lobby-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f5f6fa; z-index: 999; display: flex; flex-direction: column; align-items: center; padding-top: 50px; overflow-y: auto; }
+        .lobby-container { width: 80%; max-width: 900px; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .project-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; position: relative; text-align: center; }
+        .project-card:hover { border-color: var(--accent); }
+        .project-card h3 { margin: 10px 0; color: var(--primary); font-size: 16px; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-back-home { background: #eee; border: none; padding: 5px 10px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; font-size: 12px; width: fit-content; }
+        .del-file { position: absolute; top: 5px; right: 5px; color: #ccc; border: none; background: none; cursor: pointer; font-size: 18px; }
+        .del-file:hover { color: red; }
     </style>
 </head>
 <body>
@@ -111,45 +86,51 @@
         <p id="login-msg" style="color:red; font-size:12px; margin:0; display:none; text-align:center;">帳號或密碼錯誤！</p>
         <p onclick="toggleAuthMode()" id="auth-switch" style="font-size:12px; color:#666; text-align:center; cursor:pointer; text-decoration:underline;">還沒有帳號？按此註冊</p>
     </div>
+    <p style="margin-top:20px; font-size:12px; opacity:0.7;">提示：第一次進入網站，需先註冊帳號密碼</p>
 </div>
 
 <div id="lobby-view" style="display: none;">
-    <div class="lobby-container">
-        <h1 style="color: var(--primary); font-size: 24px;">組裝專案大廳</h1>
+    <div class="lobby-container" style="width:80%; margin: 0 auto; padding-top: 50px;">
+        <h1 style="color: var(--primary);">組裝專案大廳</h1>
+        
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button onclick="createNewProject()" style="background:var(--primary); color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; font-weight:bold; flex:1;">+ 建立新專案</button>
-            <button onclick="logout()" style="background:#eee; border:1px solid #ccc; color:#666; padding:10px 15px; border-radius:6px; cursor:pointer; font-weight:bold; flex:1;">登出</button>
+            <button onclick="createNewProject()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold;">
+                + 建立新專案
+            </button>
+
+            <button onclick="logout()" style="background:#eee; border:1px solid #ccc; color:#666; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold;">
+                登出系統
+            </button>
         </div>
+
         <div class="project-grid" id="project-grid"></div>
     </div>
 </div>
 
-<div id="editor-view">
+<div id="editor-view" style="display: none; width: 100%; height: 100%;">
     <div class="sidebar">
-        <button onclick="backToLobby()" style="margin-bottom:10px; cursor:pointer; background:#eee; border:none; padding:8px; border-radius:4px; font-weight:bold;">← 返回大廳</button>
+        <button onclick="backToLobby()" style="margin-bottom:10px; cursor:pointer; background:#eee; border:none; padding:5px; border-radius:4px;">← 返回大廳</button>
         <div class="header">
             <span id="node-label">主流程清單</span>
         </div>
 
         <div class="rename-section">
-            <div style="font-size: 11px; color: var(--accent); margin-bottom: 5px;">✍️ 修改當前名稱：</div>
+            <div style="font-size: 11px; color: var(--accent); margin-bottom: 5px;">✍️ 修改當前框框名稱：</div>
             <input type="text" id="rename-input" class="rename-input">
         </div>
 
-        <div style="font-size: 11px; color: #999; margin-bottom: 5px;">子項目 (每行一個步驟)：</div>
+        <div style="font-size: 11px; color: #999; margin-bottom: 5px;">子項目清單 (每行一個步驟)：</div>
         <textarea id="editor" placeholder="每一行會生成一個右側分支..."></textarea>
         
-        <div style="display: flex; gap: 5px;">
-            <button class="btn-print" onclick="window.print()" style="flex:1;">下載PDF/列印</button>
-            <button class="btn-print" style="background:#2c3e50; flex:1;" onclick="downloadData()">備份</button>
-        </div>
-        <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer; font-size:11px; margin-top:15px; text-decoration:underline;">登出系統</button>
+        <button class="btn-print" onclick="window.print()">列印 / 存為 PDF</button>
+        <button class="btn-print" style="background:#2c3e50;" onclick="downloadData()">下載數據備份</button>
+        <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer; font-size:12px; margin-top:20px; text-decoration:underline;">安全登出系統</button>
     </div>
     <div class="main-view"><div id="canvas" class="tree-root"></div></div>
 </div>
 
 <script>
-    // --- 腳本邏輯完全保留，無變動 ---
+    // --- 帳號管理邏輯 ---
     let users = JSON.parse(localStorage.getItem('sys_users')) || { "admin": "1234" };
     let isRegisterMode = false;
     let loggedUser = sessionStorage.getItem('logged_user') || "";
@@ -165,10 +146,14 @@
         const id = document.getElementById('user-id').value.trim();
         const pw = document.getElementById('user-pw').value.trim();
         const msg = document.getElementById('login-msg');
+
         if (!id || !pw) return;
+
         if (isRegisterMode) {
-            if (users[id]) { msg.innerText = "帳號已存在！"; msg.style.display = "block"; }
-            else {
+            if (users[id]) {
+                msg.innerText = "帳號已存在！";
+                msg.style.display = "block";
+            } else {
                 users[id] = pw;
                 localStorage.setItem('sys_users', JSON.stringify(users));
                 alert("註冊成功！現在請登入。");
@@ -178,13 +163,20 @@
             if (users[id] === pw) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('logged_user', id);
-                location.reload();
-            } else { msg.innerText = "帳號或密碼錯誤！"; msg.style.display = "block"; }
+                location.reload(); // 刷新以載入該用戶資料
+            } else {
+                msg.innerText = "帳號或密碼錯誤！";
+                msg.style.display = "block";
+            }
         }
     }
 
-    function logout() { sessionStorage.clear(); location.reload(); }
+    function logout() {
+        sessionStorage.clear();
+        location.reload();
+    }
 
+    // --- 資料管理邏輯 (資料隔離) ---
     const blankTemplate = () => ({ "root": { name: "組裝流程", children: [] } });
     let allProjects = JSON.parse(localStorage.getItem('files_' + loggedUser)) || { "預設專案": null };
     let currentProjectName = "", treeData = {}, activeId = "root";
@@ -201,11 +193,12 @@
         }
     }
 
+    // --- 介面邏輯 ---
     function renderLobby() {
         document.getElementById('project-grid').innerHTML = "";
         Object.keys(allProjects).forEach(name => {
             const card = document.createElement('div'); card.className = "project-card";
-            card.innerHTML = `<button onclick="event.stopPropagation(); deleteProject('${name}')" style="position:absolute;right:5px;top:5px;border:none;background:none;cursor:pointer;color:#ccc;font-size:16px;">×</button><h3>${name}</h3><div style="font-size:11px; color:#999;">點擊進入編輯</div>`;
+            card.innerHTML = `<button onclick="event.stopPropagation(); deleteProject('${name}')" style="position:absolute;right:5px;top:5px;border:none;background:none;cursor:pointer;color:#ccc;">×</button><h3>${name}</h3><div style="font-size:11px; color:#999;">點擊進入編輯</div>`;
             card.onclick = () => openProject(name);
             document.getElementById('project-grid').appendChild(card);
         });
@@ -223,7 +216,8 @@
         if (Object.keys(allProjects).length <= 1) return alert("至少保留一個專案");
         if (confirm(`確定要刪除「${name}」嗎？`)) {
             delete allProjects[name];
-            saveAll(); renderLobby();
+            saveAll();
+            renderLobby();
         }
     }
 
@@ -244,14 +238,7 @@
         editor.value = treeData[id].children.map(cid => treeData[cid].name).join('\n');
         canvas.innerHTML = "";
         canvas.appendChild(buildTree("root"));
-        if (window.innerWidth <= 768) {
-            setTimeout(() => {
-                const activeBox = document.querySelector('.box.active');
-                if (activeBox) activeBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-            }, 100);
-        } else {
-            editor.focus();
-        }
+        editor.focus();
     }
 
     renameInput.addEventListener('input', () => {
@@ -297,17 +284,17 @@
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", currentProjectName + "_backup.json");
+        document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
+        downloadAnchorNode.remove();
     }
 
+    // --- 啟動檢查 ---
     window.onload = function() {
         if (sessionStorage.getItem('isLoggedIn') === 'true' && loggedUser) {
             document.getElementById('login-overlay').style.display = "none";
             document.getElementById('lobby-view').style.display = "flex";
-            document.getElementById('editor-view').style.display = "none";
             renderLobby();
-        } else {
-            document.getElementById('editor-view').style.display = "none";
         }
     };
 </script>

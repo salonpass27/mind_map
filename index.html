@@ -3,204 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SOP 組裝系統 - 終極適配版</title>
+    <title>SOP 組裝系統 - 終極修復版</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #f8f9fa; }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); height: 100vh; overflow: hidden; }
-
-        /* --- 響應式佈局主架構 --- */
-        #editor-view { display: flex; height: 100vh; width: 100%; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --line: #bdc3c7; --bg: #f5f6fa; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* 電腦版：左側工具欄 320px */
-        .sidebar { width: 340px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 20px; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
-        .main-view { flex: 1; background: white; overflow: auto; display: flex; align-items: flex-start; padding: 40px; }
+        body { margin: 0; font-family: "Microsoft JhengHei", sans-serif; height: 100vh; background: var(--bg); overflow: hidden; display: flex; }
 
-        /* --- 手機版 (徹底打掉重做) --- */
+        /* --- 核心佈局 --- */
+        #editor-view { display: flex; width: 100%; height: 100vh; flex-direction: row; }
+
+        /* 電腦版側邊欄 */
+        .sidebar { width: 340px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 20px; z-index: 100; flex-shrink: 0; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        .main-view { flex: 1; overflow: auto; background: white; display: flex; align-items: flex-start; padding: 60px; position: relative; }
+
+        /* --- 手機版專屬 (上圖下文) --- */
         @media (max-width: 768px) {
-            #editor-view { flex-direction: column-reverse; } /* 下方編輯，上方看圖 */
+            #editor-view { flex-direction: column-reverse; }
             .sidebar { 
                 width: 100% !important; 
-                height: 40vh !important; 
+                height: 45vh !important; /* 固定編輯區高度 */
                 border-right: none !important; 
                 border-top: 3px solid var(--accent); 
                 padding: 15px !important;
+                overflow-y: auto;
             }
             .main-view { 
-                height: 60vh; 
-                padding: 15px !important;
-                /* 手機版改為垂直列表模式，避免左右滑動麻煩 */
+                height: 55vh !important; /* 固定圖片區高度 */
+                width: 100% !important;
+                padding: 30px !important;
+                background: #fdfdfd;
+                border-bottom: 1px solid #eee;
+                -webkit-overflow-scrolling: touch;
             }
-            .li-node { flex-direction: column !important; align-items: flex-start !important; }
-            .ul-tree { padding-left: 20px !important; }
-            .li-node::before, .li-node::after { left: -15px !important; }
+            .box { padding: 6px 12px !important; font-size: 12px !important; }
         }
 
-        /* 編輯元件 */
-        .header { border-bottom: 3px solid var(--accent); margin-bottom: 15px; padding-bottom: 10px; font-weight: bold; color: var(--accent); }
-        .input-group { margin-bottom: 15px; }
-        .label { font-size: 12px; color: #888; margin-bottom: 5px; }
-        .input-text { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; font-weight: bold; }
-        textarea { width: 100%; flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; resize: none; background: #fafafa; }
+        /* 介面元件 */
+        .header { border-bottom: 3px solid var(--accent); margin-bottom: 12px; padding-bottom: 8px; font-weight: bold; color: var(--accent); }
+        .rename-input { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        textarea { width: 100%; flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; resize: none; background: #fafafa; min-height: 100px; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .btn-main { background: var(--accent); color: white; }
+        .btn-outline { background: none; border: 1px solid #ddd; color: #666; width: auto; margin-bottom: 10px; }
 
-        /* 心智圖節點樣式 */
+        /* 心智圖樹狀結構 */
         .tree-root { display: flex; flex-direction: column; align-items: flex-start; min-width: max-content; }
         .ul-tree { list-style: none; padding-left: 30px; margin: 0; position: relative; }
-        .li-node { position: relative; display: flex; align-items: center; padding: 8px 0; }
-        .box { 
-            padding: 8px 15px; border: 2px solid var(--primary); border-radius: 6px; 
-            background: white; cursor: pointer; font-weight: bold; white-space: nowrap; 
-            transition: 0.2s; font-size: 14px; 
-        }
-        .box.active { border-color: var(--accent); background: #fff7ed; transform: scale(1.05); }
-        .box.root-box { background: var(--primary); color: white; border-radius: 20px; padding: 12px 25px; }
+        .li-node { position: relative; display: flex; align-items: center; padding: 10px 0; }
+        .box { padding: 8px 16px; border: 2px solid var(--primary); border-radius: 6px; background: white; cursor: pointer; font-weight: bold; white-space: nowrap; transition: 0.2s; font-size: 14px; color: var(--primary); }
+        .box.active { border-color: var(--accent); background: #fff7ed; transform: scale(1.05); box-shadow: 0 4px 10px rgba(230, 126, 34, 0.2); }
+        .box.root-box { background: var(--primary); color: white; border-radius: 30px; padding: 12px 25px; font-size: 16px; }
 
         /* 連線 */
-        .li-node::before { content: ""; position: absolute; left: -30px; top: 50%; width: 30px; border-top: 2px solid #ccc; }
-        .li-node::after { content: ""; position: absolute; left: -30px; width: 0; border-left: 2px solid #ccc; top: 0; height: 100%; }
+        .li-node::before { content: ""; position: absolute; left: -30px; top: 50%; width: 30px; border-top: 2px solid var(--line); }
+        .li-node::after { content: ""; position: absolute; left: -30px; width: 0; border-left: 2px solid var(--line); top: 0; height: 100%; }
         .li-node:first-child::after { top: 50%; height: 50%; }
         .li-node:last-child::after { height: 50%; }
         .li-node:only-child::after { display: none; }
 
-        /* 登入與大廳卡片樣式 */
+        /* 登入與大廳 */
         #login-screen, #lobby-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 350px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-outline { background: none; border: 1px solid #ddd; color: #666; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; width: 100%; max-width: 800px; margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 800px; margin-top: 20px; }
-        .project-item { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; position: relative; border: 2px solid transparent; }
-        .project-item:hover { border-color: var(--accent); }
-
-        @media print { .sidebar { display: none; } .main-view { overflow: visible; height: auto; } .box.active { background: white !important; } }
+        @media print { .sidebar { display: none; } .box.active { background: white !important; } }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div class="card">
-        <h2 style="text-align:center; margin-top:0;">SOP 安全登入</h2>
-        <input type="text" id="user-id" class="input-text" placeholder="帳號" style="margin-bottom:10px;">
-        <input type="password" id="user-pw" class="input-text" placeholder="密碼">
-        <button class="btn btn-primary" onclick="handleAuth()">進入系統</button>
-        <p onclick="toggleReg()" id="reg-toggle" style="text-align:center; font-size:12px; color:#666; cursor:pointer; margin-top:15px; text-decoration:underline;">註冊新帳號</p>
+    <div style="background:white; padding:30px; border-radius:15px; width:100%; max-width:320px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <h2 style="text-align:center; margin-top:0;">SOP 系統驗證</h2>
+        <input type="text" id="u-id" class="rename-input" placeholder="帳號">
+        <input type="password" id="u-pw" class="rename-input" placeholder="密碼">
+        <button class="btn btn-main" onclick="auth()">登入 / 註冊</button>
+        <p style="text-align:center; font-size:12px; color:#999; margin-top:15px;">初次登入會自動註冊帳號</p>
     </div>
 </div>
 
-<div id="lobby-screen" style="display:none; justify-content: flex-start; overflow-y: auto;">
-    <h1 style="color: var(--primary); margin-top: 40px;">專案大廳</h1>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn btn-primary" style="width:auto; padding: 10px 20px;" onclick="addProj()">+ 新建專案</button>
-        <button class="btn btn-outline" style="width:auto; padding: 10px 20px;" onclick="logout()">登出</button>
+<div id="lobby-screen" style="display:none; overflow-y:auto; justify-content: flex-start; padding-top:40px;">
+    <h1 style="color:var(--primary);">我的組裝專案</h1>
+    <div style="display:flex; gap:10px;">
+        <button class="btn btn-main" style="width:auto; padding:10px 20px;" onclick="addProj()">+ 新建專案</button>
+        <button class="btn btn-outline" style="margin:0;" onclick="logout()">登出</button>
     </div>
-    <div id="proj-list" class="project-grid"></div>
+    <div id="plist" class="project-grid"></div>
 </div>
 
 <div id="editor-view" style="display:none;">
     <div class="sidebar">
-        <button class="btn btn-outline" onclick="goHome()" style="margin-bottom:15px; width:fit-content;">← 返回</button>
-        <div class="header" id="header-name">節點名稱</div>
+        <button class="btn btn-outline" onclick="goHome()">← 返回大廳</button>
+        <div class="header" id="cur-node-name">主流程</div>
         
-        <div class="input-group">
-            <div class="label">修改此項名稱：</div>
-            <input type="text" id="rename-box" class="input-text">
-        </div>
+        <div style="font-size:11px; color:#999; margin-bottom:5px;">✍️ 修改名稱：</div>
+        <input type="text" id="rename-box" class="rename-input">
         
-        <div class="label">子項目清單 (每行一個)：</div>
+        <div style="font-size:11px; color:#999; margin-bottom:5px;">子項目清單 (每行一個)：</div>
         <textarea id="children-box"></textarea>
         
-        <button class="btn btn-primary" onclick="window.print()">列印 / 存為 PDF</button>
+        <button class="btn btn-main" onclick="window.print()">轉為 PDF / 列印</button>
     </div>
     
-    <div class="main-view">
+    <div class="main-view" id="scroll-area">
         <div id="tree-canvas" class="tree-root"></div>
     </div>
 </div>
 
 <script>
-    let users = JSON.parse(localStorage.getItem('sop_u')) || { "admin": "1234" };
-    let logged = sessionStorage.getItem('sop_l') || "";
-    let isReg = false;
+    let users = JSON.parse(localStorage.getItem('sop_users_v2')) || { "admin": "1234" };
+    let logged = sessionStorage.getItem('sop_logged_v2') || "";
 
-    function handleAuth() {
-        const u = document.getElementById('user-id').value.trim();
-        const p = document.getElementById('user-pw').value.trim();
+    function auth() {
+        const u = document.getElementById('u-id').value.trim();
+        const p = document.getElementById('u-pw').value.trim();
         if(!u || !p) return;
-        if(isReg) { users[u] = p; localStorage.setItem('sop_u', JSON.stringify(users)); alert("註冊成功"); toggleReg(); }
-        else { if(users[u] === p) { sessionStorage.setItem('sop_l', u); location.reload(); } else alert("錯誤"); }
+        if(!users[u]) { users[u] = p; localStorage.setItem('sop_users_v2', JSON.stringify(users)); alert("已自動為您註冊新帳號"); }
+        if(users[u] === p) { sessionStorage.setItem('sop_logged_v2', u); location.reload(); }
+        else alert("密碼錯誤");
     }
-    function toggleReg() { isReg = !isReg; document.getElementById('reg-toggle').innerText = isReg ? "返回登入" : "註冊新帳號"; }
     function logout() { sessionStorage.clear(); location.reload(); }
 
-    const storageKey = "sop_data_" + logged;
-    let projs = JSON.parse(localStorage.getItem(storageKey)) || { "範例專案": { root: { name: "主流程", children: [] } } };
-    let curName = "", curData = {}, activeId = "root";
+    const sKey = "sop_data_v2_" + logged;
+    let projs = JSON.parse(localStorage.getItem(sKey)) || { "範例專案": { root: { name: "組裝流程主標題", children: [] } } };
+    let curP = "", curD = {}, activeId = "root";
 
-    function renderProj() {
-        const list = document.getElementById('proj-list');
-        list.innerHTML = "";
+    function renderPlist() {
+        const l = document.getElementById('plist'); l.innerHTML = "";
         Object.keys(projs).forEach(n => {
-            const div = document.createElement('div');
-            div.className = "project-item";
-            div.innerHTML = `<h3>${n}</h3><button onclick="event.stopPropagation(); delProj('${n}')" style="border:none; background:none; color:red; cursor:pointer;">刪除</button>`;
-            div.onclick = () => { curName = n; curData = projs[n]; document.getElementById('lobby-screen').style.display="none"; document.getElementById('editor-view').style.display="flex"; selectNode("root"); };
-            list.appendChild(div);
+            const d = document.createElement('div'); d.className = "card";
+            d.innerHTML = `<h3>${n}</h3><button onclick="event.stopPropagation(); delP('${n}')" style="border:none;background:none;color:red;cursor:pointer;">刪除</button>`;
+            d.onclick = () => { curP = n; curD = projs[n]; document.getElementById('lobby-screen').style.display="none"; document.getElementById('editor-view').style.display="flex"; selectNode("root"); };
+            l.appendChild(d);
         });
     }
 
-    function addProj() { const n = prompt("名稱?"); if(n) { projs[n] = { root: { name: n, children: [] } }; save(); renderProj(); } }
-    function delProj(n) { if(confirm("刪?")) { delete projs[n]; save(); renderProj(); } }
-    function save() { if(curName) { projs[curName] = curData; localStorage.setItem(storageKey, JSON.stringify(projs)); } }
-    function goHome() { save(); document.getElementById('editor-view').style.display="none"; document.getElementById('lobby-screen').style.display="flex"; renderProj(); }
+    function addProj() { const n = prompt("專案名稱?"); if(n) { projs[n] = { root: { name: n, children: [] } }; save(); renderPlist(); } }
+    function delP(n) { if(confirm("確定刪除?")) { delete projs[n]; save(); renderPlist(); } }
+    function save() { if(curP) { projs[curP] = curD; localStorage.setItem(sKey, JSON.stringify(projs)); } }
+    function goHome() { save(); document.getElementById('editor-view').style.display="none"; document.getElementById('lobby-screen').style.display="flex"; renderPlist(); }
 
     function selectNode(id) {
         activeId = id;
-        const n = curData[id];
-        document.getElementById('header-name').innerText = n.name;
-        document.getElementById('rename-box').value = n.name;
-        document.getElementById('children-box').value = n.children.map(c => curData[c].name).join('\n');
-        renderTree();
+        document.getElementById('cur-node-name').innerText = curD[id].name;
+        document.getElementById('rename-box').value = curD[id].name;
+        document.getElementById('children-box').value = curD[id].children.map(c => curD[c].name).join('\n');
+        draw();
+        
+        // 手機版自動對焦：把選中的框框移到視線中央
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                const activeBox = document.querySelector('.box.active');
+                if (activeBox) activeBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            }, 100);
+        }
     }
 
     document.getElementById('rename-box').addEventListener('input', (e) => {
-        curData[activeId].name = e.target.value || " ";
-        document.getElementById('header-name').innerText = e.target.value;
-        renderTree(); save();
+        curD[activeId].name = e.target.value || " ";
+        document.getElementById('cur-node-name').innerText = e.target.value;
+        draw(); save();
     });
 
     document.getElementById('children-box').addEventListener('input', (e) => {
         const lines = e.target.value.split('\n').filter(l => l.trim() !== "");
-        const old = curData[activeId].children;
-        const nextIds = lines.map((l, i) => {
-            if(old[i]) { curData[old[i]].name = l; return old[i]; }
-            const nid = 'id_' + Math.random().toString(36).substr(2, 9);
-            curData[nid] = { name: l, children: [] }; return nid;
+        const old = curD[activeId].children;
+        const nids = lines.map((l, i) => {
+            if(old[i]) { curD[old[i]].name = l; return old[i]; }
+            const nid = 'id' + Math.random().toString(36).substr(2, 5);
+            curD[nid] = { name: l, children: [] }; return nid;
         });
-        curData[activeId].children = nextIds;
-        renderTree(); save();
+        curD[activeId].children = nids;
+        draw(); save();
     });
 
-    function buildNode(id) {
-        const node = curData[id];
-        const wrap = document.createElement('div'); wrap.className = "li-node";
-        const box = document.createElement('div');
-        box.className = `box ${id === 'root' ? 'root-box' : ''} ${id === activeId ? 'active' : ''}`;
-        box.innerText = node.name;
-        box.onclick = (e) => { e.stopPropagation(); selectNode(id); };
-        wrap.appendChild(box);
-        if(node.children.length > 0) {
-            const ul = document.createElement('div'); ul.className = "ul-tree";
-            node.children.forEach(cid => ul.appendChild(buildNode(cid)));
-            wrap.appendChild(ul);
+    function build(id) {
+        const n = curD[id];
+        const w = document.createElement('div'); w.className = "li-node";
+        const b = document.createElement('div');
+        b.className = `box ${id === 'root' ? 'root-box' : ''} ${id === activeId ? 'active' : ''}`;
+        b.innerText = n.name;
+        b.onclick = (e) => { e.stopPropagation(); selectNode(id); };
+        w.appendChild(b);
+        if(n.children.length > 0) {
+            const u = document.createElement('div'); u.className = "ul-tree";
+            n.children.forEach(cid => u.appendChild(build(cid)));
+            w.appendChild(u);
         }
-        return wrap;
+        return w;
     }
 
-    function renderTree() { const c = document.getElementById('tree-canvas'); c.innerHTML = ""; c.appendChild(buildNode("root")); }
+    function draw() { const c = document.getElementById('tree-canvas'); c.innerHTML = ""; c.appendChild(build("root")); }
 
     window.onload = () => {
-        if(logged) { document.getElementById('login-screen').style.display="none"; document.getElementById('lobby-screen').style.display="flex"; renderProj(); }
+        if(logged) { document.getElementById('login-screen').style.display="none"; document.getElementById('lobby-screen').style.display="flex"; renderPlist(); }
     };
 </script>
 
